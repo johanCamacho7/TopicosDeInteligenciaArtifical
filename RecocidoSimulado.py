@@ -47,7 +47,7 @@ def recocidoSimulado(matriz_dist):
     print(f"Solución Inicial (Vecino Más Cercano): {solucion_actual}")
     print(f"Costo Inicial: {costo_actual:.2f}\n")
 
-    #Parámetros de la simulacion
+    #parámetros de la simulacion
     temp_de_arranque = float(n)  # empieza bajo
     temp_maxima = float(n * 30)  # pico de temperatura
     temp_minima = 1e-5  # criterio de paro
