@@ -50,7 +50,6 @@ def recocidoSimulado(problema_inicial):
             vecino = list(solucion_actual)
             i, j = random.sample(range(n), 2)
 
-            ## CAMBIO: Guardar los valores que se van a intercambiar para poder imprimirlos.
             valor_i = vecino[i]
             valor_j = vecino[j]
 
@@ -108,7 +107,6 @@ def recocidoSimulado(problema_inicial):
 if __name__ == "__main__":
     NUM_ELEMENTOS = 15
 
-    # Creamos el arreglo objetivo (ordenado) y luego lo desordenamos para crear el problema.
     arreglo_objetivo = list(range(NUM_ELEMENTOS))
     arreglo_desordenado = list(arreglo_objetivo)
     random.shuffle(arreglo_desordenado)
