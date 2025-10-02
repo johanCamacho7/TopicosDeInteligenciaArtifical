@@ -75,7 +75,6 @@ def recocidoSimulado(problema_inicial):
 
         if mejor_costo == 0:
             print(f"Iteración {iteracion:3}: Solución óptima (costo 0) encontrada{swap_elegido_info}")
-            ## NUEVO CAMBIO: Imprimir el estado final del arreglo al encontrar la solución.
             print(f"           Arreglo final:   {solucion_actual}\n")
             break
 
@@ -110,7 +109,7 @@ if __name__ == "__main__":
     arreglo_objetivo = list(range(NUM_ELEMENTOS))
     arreglo_desordenado = list(arreglo_objetivo)
     random.shuffle(arreglo_desordenado)
-
+    #arreglo_desordenado = [1,3,2,4,7,5,6,8,9]
     print(f"--- Problema: Ordenar un arreglo de {NUM_ELEMENTOS} elementos usando recocido simulado   ---")
 
     recorrido_optimo, costo_optimo = recocidoSimulado(arreglo_desordenado)
