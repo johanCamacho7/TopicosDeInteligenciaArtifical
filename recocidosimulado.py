@@ -4,10 +4,15 @@ import numpy as np
 
 
 def calcularCostoDesorden(arreglo):
-    """Calcula el costo (desorden) de un arreglo. Un arreglo ordenado tiene costo 0."""
+    """Calcula el costo (desorden) de un arreglo. Un arreglo ordenado tiene costo 0.
+    Por Pares invertidos suman costo cada par invertido.
+    """
     costo = 0
-    for i, valor in enumerate(arreglo):
-        costo += abs(valor - i)
+    n = len(arreglo)
+    for i in range(n):
+        for j in range(i + 1, n):
+            if arreglo[i] > arreglo[j]:
+                costo += 1
     return costo
 
 
@@ -104,12 +109,13 @@ def recocidoSimulado(problema_inicial):
 
 # problema de ordenamiento
 if __name__ == "__main__":
-    NUM_ELEMENTOS = 15
+    NUM_ELEMENTOS = 9
 
     arreglo_objetivo = list(range(NUM_ELEMENTOS))
     arreglo_desordenado = list(arreglo_objetivo)
     random.shuffle(arreglo_desordenado)
-    #arreglo_desordenado = [1,3,2,4,7,5,6,8,9]
+    #arreglo_desordenado = [1,3,2,4,7,5,9,8,6]
+    #arreglo_desordenado = [1,3,2,4,100,5,9,8,1500]
     print(f"--- Problema: Ordenar un arreglo de {NUM_ELEMENTOS} elementos usando recocido simulado   ---")
 
     recorrido_optimo, costo_optimo = recocidoSimulado(arreglo_desordenado)
