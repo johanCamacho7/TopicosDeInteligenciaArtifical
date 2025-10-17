@@ -25,9 +25,9 @@ def cargar_matriz_Compuesta(ruta: str) -> np.ndarray:
         df = pd.read_excel(ruta, header=0, index_col=0)
         # Convertir a matriz NumPy de tipo float
         matriz = df.values.astype(float)
-        N = NUM_CEDIS + NUM_SUCURSALES
-        if matriz.shape != (N, N):
-            print(f"Advertencia: El tamaño de la matriz cargada ({matriz.shape}) no es el esperado ({N}, {N}).")
+        n = NUM_CEDIS + NUM_SUCURSALES
+        if matriz.shape != (n, n):
+            print(f"Advertencia: El tamaño de la matriz cargada ({matriz.shape}) no es el esperado ({n}, {n}).")
             exit()
         print("Matriz de costos cargada exitosamente, usando la estructura de tabla estándar.")
         return matriz
@@ -49,11 +49,11 @@ def generar_solucion_inicial() -> List[List[int]]:
     solucion_inicial = [[] for _ in range(NUM_CEDIS)]
     # Asegurar al menos 1 tienda por CEDIS
     for cedi_idx in range(NUM_CEDIS):
-        tienda_idx = sucursales.pop(0)
-        solucion_inicial[cedi_idx].append(tienda_idx)
+        tienda_id = sucursales.pop(0)
+        solucion_inicial[cedi_idx].append(tienda_id)
     # Asignar el resto aleatoriamente, respetando el MAX
     while sucursales:
-        tienda_idx = sucursales.pop(0)
+        tienda_id = sucursales.pop(0)
         # Candidatos: CEDIS que tienen menos del MAX permitido
         cedis_candidatos = [i for i in range(NUM_CEDIS) if len(solucion_inicial[i]) < MAX_TIENDAS_POR_CEDIS]
         if not cedis_candidatos:
@@ -62,10 +62,11 @@ def generar_solucion_inicial() -> List[List[int]]:
         cedis_elegido = random.choice(cedis_candidatos)
         # Insertar en posición aleatoria para aleatorizar la ruta inicial
         pos_destino = random.randrange(len(solucion_inicial[cedis_elegido]) + 1)
-        solucion_inicial[cedis_elegido].insert(pos_destino, tienda_idx)
+        solucion_inicial[cedis_elegido].insert(pos_destino, tienda_id)
     return solucion_inicial
 
-def calcularCostoRutas(solucion: List[List[int]]) -> float:
+
+def calcularCostoRutasTotales(solucion: List[List[int]]) -> float:
     """
     Calcula el costo total de todas las 10 rutas.
     Ruta: CEDIS -> Tienda_1 -> ... -> Tienda_N -> CEDIS.
@@ -73,9 +74,9 @@ def calcularCostoRutas(solucion: List[List[int]]) -> float:
     costo_global = 0.0
     for cedi_idx, ruta_creada in enumerate(solucion):
         # cedi_idx es el índice de los CEDIS (0 a 9)
-        num_tiendas = len(ruta_creada)
+        tiendas = len(ruta_creada)
         # anadir costo por incumplimiento de límites (MIN/MAX)
-        if num_tiendas < MIN_TIENDAS_POR_CEDIS or num_tiendas > MAX_TIENDAS_POR_CEDIS:
+        if tiendas < MIN_TIENDAS_POR_CEDIS or tiendas > MAX_TIENDAS_POR_CEDIS:
             costo_global += PENALIZACION_COSTO_FUERA_LIMITE
             continue
         if not ruta_creada:
@@ -83,16 +84,37 @@ def calcularCostoRutas(solucion: List[List[int]]) -> float:
             continue
         # CEDIS -> Primer Punto
         primer_punto = ruta_creada[0]
-        costo_global += DISTANCIA_MATRIZ[cedi_idx, primer_punto]
+        costo_global += MATRIZ_COMPUESTA[cedi_idx, primer_punto]
         # Puntos Intermedios (Tienda_i a Tienda_i+1)
         for i in range(len(ruta_creada) - 1):
             punto_actual = ruta_creada[i]
             punto_siguiente = ruta_creada[i + 1]
-            costo_global += DISTANCIA_MATRIZ[punto_actual, punto_siguiente]
+            costo_global += MATRIZ_COMPUESTA[punto_actual, punto_siguiente]
         # Último Punto -> CEDIS
         ultimo_punto = ruta_creada[-1]
-        costo_global += DISTANCIA_MATRIZ[ultimo_punto, cedi_idx]
+        costo_global += MATRIZ_COMPUESTA[ultimo_punto, cedi_idx]
     return costo_global
+
+def calcular_costo_ruta_unica(cedi_idx: int, ruta: List[int], matriz: np.ndarray) -> float:
+    """
+    Calcula el costo compuesto de una sola ruta: CEDIS -> Tiendas -> CEDIS.
+    """
+    if not ruta:
+        return 0.0
+
+    costo_ruta_individual = 0.0
+
+    #CEDIS -> Primer Punto
+    costo_ruta_individual += matriz[cedi_idx, ruta[0]]
+
+    #Puntos Intermedios (Tienda_i a Tienda_i+1)
+    for i in range(len(ruta) - 1):
+        costo_ruta_individual += matriz[ruta[i], ruta[i + 1]]
+
+    #Último Punto -> CEDIS
+    costo_ruta_individual += matriz[ruta[-1], cedi_idx]
+
+    return costo_ruta_individual
 
 def generar_vecino(solucion_actual: List[List[int]]) -> Tuple[List[List[int]], str]:
     """
@@ -160,7 +182,7 @@ def recocidoSimulado(problema_inicial: List[List[int]]):
     Implementación del recocido simulado para rutas y asignación.
     """
     solucion_actual = [list(r) for r in problema_inicial]
-    costo_actual = calcularCostoRutas(solucion_actual)
+    costo_actual = calcularCostoRutasTotales(solucion_actual)
     mejor_solucion = [list(r) for r in solucion_actual]
     mejor_costo = costo_actual
 
@@ -169,9 +191,9 @@ def recocidoSimulado(problema_inicial: List[List[int]]):
     # Parámetros ajustados
     n_puntos = NUM_SUCURSALES
     temp_de_arranque = 10.0
-    temp_maxima = 1000.0
-    temp_minima = 1e-4
-    iteraciones_por_nivel = n_puntos * 5
+    temp_maxima = 800.0
+    temp_minima = 1e-2
+    iteraciones_por_nivel = n_puntos * 2
     factor_calentamiento = 1.05
     iteraciones_en_pico = n_puntos * 2
     factor_enfriamiento = 0.98
@@ -188,7 +210,7 @@ def recocidoSimulado(problema_inicial: List[List[int]]):
         # Exploración del vecindario
         for _ in range(iteraciones_por_nivel):
             vecino, swap_elegido_info = generar_vecino(solucion_actual)
-            costo_vecino = calcularCostoRutas(vecino)
+            costo_vecino = calcularCostoRutasTotales(vecino)
             diferencia_costo = costo_vecino - costo_actual
             # Decisión: Aceptamos si es mejor o si la probabilidad lo permite
             if diferencia_costo < 0 or random.random() < math.exp(-diferencia_costo / temp_actual):
@@ -218,10 +240,11 @@ def recocidoSimulado(problema_inicial: List[List[int]]):
         iteracion += 1
     return mejor_solucion, mejor_costo
 
+
 if __name__ == "__main__":
-    DISTANCIA_MATRIZ = cargar_matriz_Compuesta(RUTA_DATA)
+    MATRIZ_COMPUESTA = cargar_matriz_Compuesta(RUTA_DATA)
     # Validación de la matriz cargada
-    if np.all(DISTANCIA_MATRIZ == 0) and DISTANCIA_MATRIZ.size > 0:
+    if np.all(MATRIZ_COMPUESTA == 0) and MATRIZ_COMPUESTA.size > 0:
         print("\n--- ¡ATENCIÓN! El algoritmo NO puede ejecutarse sin la matriz de costos. ---\n")
     else:
         print(
@@ -232,20 +255,19 @@ if __name__ == "__main__":
         problema_inicial_rutas = generar_solucion_inicial()
 
         recorrido_optimo, costo_optimo = recocidoSimulado(problema_inicial_rutas)
-
+        # resultados
         print("\n--- Resultados Finales ---")
-        print(f"Mejor Costo Global (Distancia Total): {costo_optimo:.2f}")
+        print(f"Mejor Costo Global (Costo compuesto Total): {costo_optimo:.2f}")
         print("Mejor Asignación y Rutas (Índice de Tiendas: 10 a 99):")
 
         # Imprimir la mejor solución
         for i, rutaGenerada in enumerate(recorrido_optimo):
             num_tiendas = len(rutaGenerada)
-            costo_ruta = calcularCostoRutas([[rutaGenerada]])  # Calculamos el costo individual (sin penalización)
+
+            costo_ruta = calcular_costo_ruta_unica(i, rutaGenerada, MATRIZ_COMPUESTA)
 
             if rutaGenerada:
-                # La ruta es CEDIS i+1 (index i) -> Tiendas -> CEDIS i+1
                 print(
                     f"  CEDIS {i + 1} (Tiendas: {num_tiendas}, Costo: {costo_ruta:.2f}): [C{i + 1}] -> {' -> '.join(map(str, rutaGenerada))} -> [C{i + 1}]")
             else:
-                # Esto solo ocurrirá si el costo óptimo final es penalizado
-                print(f"  CEDIS {i + 1} (Tiendas: {num_tiendas}): Sin asignaciones")
+                print(f"  CEDIS {i + 1} (Tiendas: {num_tiendas}, Costo: 0.00): Sin asignaciones")
