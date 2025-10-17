@@ -38,7 +38,6 @@ def cargar_matriz_Compuesta(ruta: str) -> np.ndarray:
         print(f"Ocurrió un error inesperado al leer el Excel: {e}")
         return np.zeros((NUM_CEDIS + NUM_SUCURSALES, NUM_CEDIS + NUM_SUCURSALES))
 
-
 def generar_solucion_inicial() -> List[List[int]]:
     """
     Solución es una Lista de 10 sub-rutas. Cada sub-ruta es una lista de índices de sucursales.
@@ -64,7 +63,6 @@ def generar_solucion_inicial() -> List[List[int]]:
         pos_destino = random.randrange(len(solucion_inicial[cedis_elegido]) + 1)
         solucion_inicial[cedis_elegido].insert(pos_destino, tienda_id)
     return solucion_inicial
-
 
 def calcularCostoRutasTotales(solucion: List[List[int]]) -> float:
     """
@@ -131,7 +129,6 @@ def generar_vecino(solucion_actual: List[List[int]]) -> Tuple[List[List[int]], s
         # Intercambiar dos tiendas dentro de la misma ruta (Intra-Ruta)
         return generar_vecino_intra_ruta(vecino)
 
-
 def generar_vecino_inter_ruta(vecino: List[List[int]]) -> Tuple[List[List[int]], str]:
     """
     Mueve una tienda de un CEDIS a otro (Asignación).
@@ -157,7 +154,6 @@ def generar_vecino_inter_ruta(vecino: List[List[int]]) -> Tuple[List[List[int]],
     movimiento_info = f"Mover: T{tienda_movida} de C{cedis_origen + 1} a C{cedis_destino + 1}"
     return vecino, movimiento_info
 
-
 def generar_vecino_intra_ruta(vecino: List[List[int]]) -> Tuple[List[List[int]], str]:
     """
     Intercambia el orden de dos tiendas dentro de la misma ruta (Orden).
@@ -175,7 +171,6 @@ def generar_vecino_intra_ruta(vecino: List[List[int]]) -> Tuple[List[List[int]],
     ruta[i], ruta[j] = ruta[j], ruta[i]
     movimiento_info = f"Swap: Orden de T{ruta[i]} y T{ruta[j]} en C{cedi_idx + 1}"
     return vecino, movimiento_info
-
 
 def recocidoSimulado(problema_inicial: List[List[int]]):
     """
@@ -239,7 +234,6 @@ def recocidoSimulado(problema_inicial: List[List[int]]):
                 f"Iteración {iteracion:3}: Fase={estado_actual:<18} Temp={temp_actual:9.3f}, Costo={costo_actual:12.2f}, Mejor Costo={mejor_costo:12.2f} | {swap_elegido_info}")
         iteracion += 1
     return mejor_solucion, mejor_costo
-
 
 if __name__ == "__main__":
     MATRIZ_COMPUESTA = cargar_matriz_Compuesta(RUTA_DATA)
