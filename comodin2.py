@@ -1,79 +1,114 @@
-import random
-import copy
-from collections import deque
+# pso_polen_pyswarms.py
+# PSO con PySwarms para ubicar 10 "sensores" maximizando el polen cubierto en un grid 2D.
+# - Campo = matriz 2D "pollen" con calidad por celda.
+# - Cada sensor cubre su celda y las 8 vecinas (bloque 3×3). No se cuenta doble.
+# - Usamos pyswarms.single.GlobalBestPSO (maximizamos devolviendo -cost para minimizar).
 
+import numpy as np
+import matplotlib.pyplot as plt
+import pyswarms as ps
 
-def costo_inversiones(array):
-    """Calcula el número de inversiones (misma función que en SA)."""
-    costo = 0
-    n = len(array)
-    for i in range(n):
-        for j in range(i + 1, n):
-            if array[i] > array[j]:
-                costo += 1
-    return costo
+# -----------------------------
+# 1) Crear un mapa simple de "polen"
+# -----------------------------
+np.random.seed(7)
+H, W = 60, 60          # tamaño del campo (alto, ancho)
+K = 10                 # número de sensores a colocar
+num_bumps = 3          # "manchas" de polen
 
+y, x = np.mgrid[0:H, 0:W]
+pollen = np.zeros((H, W), dtype=float)
 
-def busqueda_tabu(array_inicial, max_iteraciones=2000, tamano_tabu=7):
-    solucion_actual = array_inicial
-    mejor_solucion = copy.deepcopy(solucion_actual)
+centers = np.random.rand(num_bumps, 2) * np.array([H, W])
+sigmas = np.random.uniform(6, 12, size=num_bumps)
+amps   = np.random.uniform(0.6, 1.0, size=num_bumps)
 
-    # La lista tabú almacena los movimientos (pares de índices) que no se pueden revertir.
-    lista_tabu = deque(maxlen=tamano_tabu)
+for (cy, cx), s, a in zip(centers, sigmas, amps):
+    pollen += a * np.exp(-(((y - cy) ** 2 + (x - cx) ** 2) / (2 * s ** 2)))
 
-    print(f"Costo inicial (Inversiones): {costo_inversiones(solucion_actual)}")
+pollen -= pollen.min()
+pollen /= (pollen.max() + 1e-9)
+pollen = 0.9 * pollen + 0.1 * np.random.rand(H, W)
 
-    for k in range(max_iteraciones):
-        n = len(solucion_actual)
-        mejor_movimiento = None
-        mejor_costo_vecino = float('inf')
+# -----------------------------
+# 2) Fitness: cobertura 3x3 sin doble conteo
+#    PySwarms minimiza, así que devolvemos el negativo para maximizar.
+# -----------------------------
+def fitness_single(position_flat: np.ndarray) -> float:
+    """Evalúa una sola solución (vector 2*K con x1,y1,...xK,yK).
+       'Snap' a celdas, suma polen cubierto en 3×3, penaliza sensores en misma celda."""
+    pts = position_flat.reshape(K, 2).copy()
+    pts[:, 0] = np.clip(np.rint(pts[:, 0]), 0, W - 1)  # x
+    pts[:, 1] = np.clip(np.rint(pts[:, 1]), 0, H - 1)  # y
+    pts = pts.astype(int)
 
-        # 1. Explorar el vecindario completo
-        for i in range(n):
-            for j in range(i + 1, n):
-                # El movimiento es intercambiar (i, j)
-                movimiento = tuple(sorted((i, j)))
+    covered = np.zeros((H, W), dtype=bool)
+    for x0, y0 in pts:
+        for dx in (-1, 0, 1):
+            for dy in (-1, 0, 1):
+                xx, yy = x0 + dx, y0 + dy
+                if 0 <= xx < W and 0 <= yy < H:
+                    covered[yy, xx] = True
 
-                # Criterio de Aspiración: El movimiento es aceptado si mejora la mejor solución histórica (independiente de la lista tabú)
-                es_aspiracion = False
+    total_pollen = float(pollen[covered].sum())
+    unique_cells = set((int(x), int(y)) for x, y in pts)
+    duplicates = K - len(unique_cells)
+    penalty = 0.25 * duplicates
+    return total_pollen - penalty
 
-                # Generar el vecino temporalmente
-                vecino = copy.deepcopy(solucion_actual)
-                vecino[i], vecino[j] = vecino[j], vecino[i]
-                costo_vecino = costo_inversiones(vecino)
+def fitness_batch(X: np.ndarray) -> np.ndarray:
+    """PySwarms envía un batch: shape (n_particles, 2*K).
+       Debe devolver costos a minimizar → usamos -fitness."""
+    vals = np.array([fitness_single(x) for x in X], dtype=float)
+    return -vals  # minimizar el negativo = maximizar fitness
 
-                # Criterio de Aspiración
-                if costo_vecino < costo_inversiones(mejor_solucion):
-                    es_aspiracion = True
+# -----------------------------
+# 3) Configurar y correr PySwarms
+# -----------------------------
+D = 2 * K
+# límites del espacio continuo (el fitness luego redondea a celdas)
+lower_bounds = np.array([0, 0] * K, dtype=float)
+upper_bounds = np.array([W - 1, H - 1] * K, dtype=float)
+bounds = (lower_bounds, upper_bounds)
 
-                # 2. Decidir si el movimiento es el mejor ACEPTABLE (no tabú o aspiración)
-                if (movimiento not in lista_tabu) or es_aspiracion:
-                    if costo_vecino < mejor_costo_vecino:
-                        mejor_costo_vecino = costo_vecino
-                        mejor_movimiento = (i, j)
+options = {
+    "c1": 1.5,     # componente cognitiva
+    "c2": 1.5,     # componente social
+    "w": 0.72,     # inercia
+    "k": None,     # usar topología global por defecto
+    "p": 2,
+}
 
-        # 3. Mover a la mejor solución no tabú (o aspiracional)
-        if mejor_movimiento:
-            i, j = mejor_movimiento
-            solucion_actual[i], solucion_actual[j] = solucion_actual[j], solucion_actual[i]
+optimizer = ps.single.GlobalBestPSO(
+    n_particles=30,
+    dimensions=D,
+    options=options,
+    bounds=bounds,
+    velocity_clamp=(-2.0, 2.0),
+    init_pos=None,
+)
 
-            # 4. Actualizar la Lista Tabú (Prohibir el movimiento inverso)
-            movimiento_inverso = tuple(sorted((i, j)))
-            lista_tabu.append(movimiento_inverso)
+cost, pos = optimizer.optimize(fitness_batch, iters=60, verbose=True)
+# cost es el mínimo de -fitness → el fitness máximo es -cost
+best_fitness = -float(cost)
+best_pos = pos.copy()
 
-            # 5. Actualizar el mejor global
-            if mejor_costo_vecino < costo_inversiones(mejor_solucion):
-                mejor_solucion = copy.deepcopy(solucion_actual)
+# -----------------------------
+# 4) Visualizar resultado
+# -----------------------------
+best_pts = best_pos.reshape(K, 2).copy()
+best_pts[:, 0] = np.clip(np.rint(best_pts[:, 0]), 0, W - 1)
+best_pts[:, 1] = np.clip(np.rint(best_pts[:, 1]), 0, H - 1)
+best_pts = best_pts.astype(int)
 
-        # Opcional: Salir si se alcanza el óptimo
-        if costo_inversiones(mejor_solucion) == 0:
-            break
+plt.figure(figsize=(6, 6))
+plt.imshow(pollen, origin="lower")
+plt.scatter(best_pts[:, 0], best_pts[:, 1], marker="x", s=80)
+plt.title(f"PySwarms: 10 sensores óptimos (fitness={best_fitness:.2f})")
+plt.xlabel("x (celdas)")
+plt.ylabel("y (celdas)")
+plt.tight_layout()
+plt.show()
 
-    print(f"\nBúsqueda Tabú Finalizada. Costo: {costo_inversiones(mejor_solucion)}")
-    return mejor_solucion
-
-
-# --- Ejecución ---
-array = [5, 2, 8, 1, 6, 4, 7, 3]
-resultado_ts = busqueda_tabu(array)
-print(f"Resultado TS: {resultado_ts}")
+print("Mejor fitness (max):", best_fitness)
+print("Coordenadas de sensores (x, y):\n", best_pts)

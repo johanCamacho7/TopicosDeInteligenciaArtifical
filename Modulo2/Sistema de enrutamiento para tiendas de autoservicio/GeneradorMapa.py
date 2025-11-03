@@ -2,7 +2,7 @@ import pandas as pd
 import folium
 import numpy as np
 
-archivo_excel = 'data/datos_distribucion_tiendas.xlsx'
+archivo_excel = 'Datos/datos_distribucion_tiendas.xlsx'
 nombre_hoja = 'Sheet1'
 archivo_salida_html = 'mapa_tiendas_satelital.html'
 #

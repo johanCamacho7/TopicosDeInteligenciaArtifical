@@ -9,8 +9,8 @@ class CargadorDatos:
 
     def cargar_archivos(self):
         try:
-            self.MatrizCombustible = pd.read_excel("data/matriz_costos_combustible.xlsx")
-            self.MatrizDistancias = pd.read_excel("data/matriz_distancias.xlsx")
+            self.MatrizCombustible = pd.read_excel("Datos/matriz_costos_combustible.xlsx")
+            self.MatrizDistancias = pd.read_excel("Datos/matriz_distancias.xlsx")
             print("Archivos cargados correctamente.")
         except Exception as e:
             print(f"Error al cargar archivos: {e}")
@@ -41,7 +41,7 @@ class ProcesamientoDatos:
         print("Matriz compuesta creada correctamente.")
         return self.df_compuesta
 
-    def guardar_excel(self, ruta: str = "data/matrizCompuesta.xlsx") -> None:
+    def guardar_excel(self, ruta: str = "Datos/matrizCompuesta.xlsx") -> None:
         """
         Guarda la matriz compuesta en un archivo Excel (.xlsx)
         """
