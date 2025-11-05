@@ -3,7 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 """
-Parámetros AJUSTABLES
+Parámetros
 """
 excel_path = "Datos/data.xlsx"
 sheet_name = "Hoja1"
@@ -12,7 +12,7 @@ n_grid = 220
 margin = 0.005
 eps = 1e-12
 """
-Vecindad
+Vecindad 
 """
 kernel_type = "idw"              # "idw" o "box"
 idw_power = 4.2                  # 3.5–5.0 => menos suavizado
@@ -49,6 +49,9 @@ ys = df["lat"].values
 
 # Utilidades compactas
 def topk_weights(w, k):
+    """
+    Retiene solo las k mayores entradas de w, pone a 0 las demás.
+    """
     if k is None or k <= 0 or k >= w.size:
         return w
     idx = np.argpartition(w, -k)[-k:]
@@ -57,6 +60,9 @@ def topk_weights(w, k):
     return w2
 
 def local_weights(x0, y0, xs, ys, kernel="idw", power=2.0, k=None, box_h=0.002, eps=1e-12):
+    """
+    Calcula pesos locales en (x0, y0) dados puntos (xs, ys).
+    """
     if kernel == "box":
         mask = (np.abs(x0 - xs) <= box_h) & (np.abs(y0 - ys) <= box_h)
         w = np.where(mask, 1.0, 0.0).astype(float)
@@ -74,6 +80,9 @@ def local_weights(x0, y0, xs, ys, kernel="idw", power=2.0, k=None, box_h=0.002, 
         return w
 
 def idw_interpolate(xs, ys, zs, XI, YI, power=2.0, k=None, eps=1e-12, chunk=6000):
+    """
+    Interpolación IDW en la malla (XI, YI) dados puntos (xs, ys) con valores zs.
+    """
     xyi = np.column_stack([XI.ravel(), YI.ravel()])
     out = np.full(xyi.shape[0], np.nan, dtype=float)
     pts = np.column_stack([xs, ys])
@@ -136,10 +145,23 @@ def plot_heatmap(Z, XI, YI, title, points_df):
     plt.figure(figsize=(7, 6))
     extent = [XI.min(), XI.max(), YI.min(), YI.max()]
     plt.imshow(Z, origin="lower", extent=extent, aspect="auto")
-    plt.scatter(points_df["lon"], points_df["lat"], s=10, alpha=0.6)
-    plt.xlabel("Longitud"); plt.ylabel("Latitud")
-    plt.title(title); plt.colorbar(label=title)
-    plt.tight_layout(); plt.show()
+
+    # Plot each crop type with a different color
+    unique_crops = points_df["cultivo"].unique()
+    for crop in unique_crops:
+        mask = points_df["cultivo"] == crop
+        plt.scatter(points_df.loc[mask, "lon"],
+                   points_df.loc[mask, "lat"],
+                   s=10, alpha=0.6,
+                   label=crop)
+
+    plt.xlabel("Longitud")
+    plt.ylabel("Latitud")
+    plt.title(title)
+    plt.colorbar(label=title)
+    plt.legend(title="Tipos de Cultivo", bbox_to_anchor=(1.15, 1))
+    plt.tight_layout()
+    plt.show()
 
 
 # Interpolaciones (3 mapas)
