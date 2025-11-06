@@ -250,9 +250,7 @@ def graficar_mapa_calor(Z: np.ndarray, XI: np.ndarray, YI: np.ndarray,
     plt.show()
 
 
-# ==========================
 # Interpolaciones (3 capas)
-# ==========================
 Z_elevacion = interpolar_idw(
     x_obs, y_obs, df["elevacion"].values, XI, YI,
     power=potencia_idw, k=max_vecinos, eps=epsilon
@@ -266,9 +264,7 @@ Z_temperatura = interpolar_idw(
     power=potencia_idw, k=max_vecinos, eps=epsilon
 )
 
-# =========
 # Factores
-# =========
 cultivos = df["cultivo"].astype(str).values
 cultivos_unicos, idx_cultivo = np.unique(cultivos, return_inverse=True)
 
@@ -313,17 +309,14 @@ for i in range(XI.shape[0]):
             rango_elevacion, rango_salinidad, rango_temperatura
         )
 
-# =========================
 # Mapa maestro de idoneidad
-# =========================
 idoneidad_total = np.clip(
     W1 * factor_cultivo + W2 * factor_homogeneidad - W3 * factor_multicultivo,
     0.0, 1.0
 )
 
-# ===========
+
 # Visualización
-# ===========
 graficar_mapa_calor(
     Z_elevacion, XI, YI,
     f"Elevación (IDW p={potencia_idw}, k={max_vecinos})", df

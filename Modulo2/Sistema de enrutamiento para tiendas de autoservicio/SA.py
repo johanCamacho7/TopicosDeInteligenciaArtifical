@@ -13,7 +13,7 @@ NUM_CEDIS = 10
 NUM_SUCURSALES = 90
 MAX_TIENDAS_POR_CEDIS = 15
 MIN_TIENDAS_POR_CEDIS = 1
-RUTA_DATA = "Datos/matrizCompuesta.xlsx"
+RUTA_DATA = "Data/matrizCompuesta.xlsx"
 PENALIZACION_COSTO_FUERA_LIMITE = 10000000.0  # Penalización alta para asegurar el cumplimiento de 1-15
 
 

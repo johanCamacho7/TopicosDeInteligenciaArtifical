@@ -33,7 +33,7 @@ ruta_YI_opcional = None                        # ejemplo: "YI.npy" (latitudes po
 ruta_csv_salida = "sensores_pso.csv"           # None para no guardar CSV
 
 # Hiperparámetros del problema
-n_sensores = 20              # cantidad de sensores a ubicar
+n_sensores = 100              # cantidad de sensores a ubicar
 dist_minima_celdas = 5       # distancia mínima entre sensores (en celdas)
 peso_penalizacion_dist = 2.0 # penalización por violar la distancia mínima
 penalizacion_nan = 10.0      # penalización por caer en celda NaN
