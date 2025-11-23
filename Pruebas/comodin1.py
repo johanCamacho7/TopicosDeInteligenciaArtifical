@@ -133,7 +133,7 @@ def read_plate(image: np.ndarray) -> str:
 # ---------------------- MAIN ----------------------
 
 def main():
-    filename = "7.jpg"
+    filename = "../7.jpg"
 
     print(f"[INFO] Leyendo imagen local '{filename}' ...")
     image = cv2.imread(filename)
