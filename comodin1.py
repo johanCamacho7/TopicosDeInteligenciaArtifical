@@ -3,7 +3,7 @@ import numpy as np
 import easyocr
 
 """
-Script local para leer una placa usando:
+Script local para leer una placa usando: modelo pre entrenado de EasyOCR + OpenCV.
 
 1. OpenCV → detección aproximada de la placa (ROI por contornos)
 2. EasyOCR → OCR sobre la región detectada (o la imagen completa si no detecta nada)
