@@ -97,7 +97,7 @@ def correr_mi_version(n):
     try:
         coords = generar_coordenadas(n)
         municipios = [mv.Municipio(x, y, nombre=f"Ciudad_{i+1}")
-                      for i, (x, y) in enumerate(coords)]
+                    for i, (x, y) in enumerate(coords)]
         ga = mv.AlgoritmoGenetico(
             municipios=municipios,
             tam_poblacion=100,

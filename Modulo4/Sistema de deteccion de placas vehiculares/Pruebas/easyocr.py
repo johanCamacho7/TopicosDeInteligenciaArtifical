@@ -8,7 +8,6 @@ Script local para leer una placa usando: modelo pre entrenado de EasyOCR + OpenC
 1. OpenCV → detección aproximada de la placa (ROI por contornos)
 2. EasyOCR → OCR sobre la región detectada (o la imagen completa si no detecta nada)
 
-La imagen se llama '1.jpg' y debe estar en el mismo directorio.
 """
 
 # ---------------------- CONFIG ----------------------

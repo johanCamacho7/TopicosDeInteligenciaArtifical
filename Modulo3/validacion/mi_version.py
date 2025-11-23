@@ -33,10 +33,11 @@ class Municipio:
         Distancia entre este municipio y otro
         Ya no es usada por el AG, pero
         se queda porque es natural que un objeto municipio sepa su distancia de otros
+        :param otro:
+        :return:
         """
         diff = self.coord - otro.coord
         return np.sqrt(np.dot(diff, diff))
-
 
 class Ruta:
     """
@@ -87,7 +88,6 @@ class Ruta:
     def __repr__(self):
         nombres = [self.municipios[i].nombre or str(i) for i in self.indices]
         return f"Ruta({nombres}) Dist={self.distancia_total():.4f}"
-
 
 class AlgoritmoGenetico:
     """
