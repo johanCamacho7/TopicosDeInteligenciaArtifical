@@ -4,21 +4,15 @@ import easyocr
 
 """
 Script local para leer una placa usando: modelo pre entrenado de EasyOCR + OpenCV.
-
 1. OpenCV → detección aproximada de la placa (ROI por contornos)
 2. EasyOCR → OCR sobre la región detectada (o la imagen completa si no detecta nada)
 
 """
-
 # ---------------------- CONFIG ----------------------
-
 # Idiomas de EasyOCR
 EASYOCR_LANGS = ["en"]  # puedes probar ['en', 'es']
-
 # Inicializamos EasyOCR una sola vez (tarda un poco al inicio)
 reader = easyocr.Reader(EASYOCR_LANGS)
-
-
 # ---------------------- FUNCIONES ----------------------
 
 def find_plate_roi(image: np.ndarray):
@@ -132,13 +126,13 @@ def read_plate(image: np.ndarray) -> str:
 # ---------------------- MAIN ----------------------
 
 def main():
-    filename = "../7.jpg"
+    filename = "ejemplos/1.jpg"
 
     print(f"[INFO] Leyendo imagen local '{filename}' ...")
     image = cv2.imread(filename)
 
     if image is None:
-        print("[ERROR] No se encontró la imagen '1.jpg' en el root.")
+        print("[ERROR] No se encontró la imagen en el root.")
         return
 
     plate = read_plate(image)
