@@ -1,17 +1,23 @@
 import cv2
-import numpy as np
 import easyocr
+import numpy as np
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+import uvicorn
 
+"""
+idioma y inicializacion del OCR
+"""
 EASYOCR_LANGS = ["es"]
 reader = easyocr.Reader(EASYOCR_LANGS)
-
+"""
+aqui estamos convirtiendo este codigo en una api para ser llamada desde web
+"""
 app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # en red local y dev es más sencillo dejarlo abierto
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -126,3 +132,17 @@ async def read_plate_api(file: UploadFile = File(...)):
 
     plate = read_plate(image)
     return {"plate": plate or ""}
+
+
+if __name__ == "__main__":
+    """
+    Permite ejecutar FastAPI directamente desde el IDE.
+    asi no necesitamos usar la terminal ni servicos que levantan un "servidor".
+    """
+
+    uvicorn.run(
+        "plate_api:app",
+        host="0.0.0.0",  # asi funciona en toda la red local
+        port=8000,
+        reload=False  # si quieres autoreload, pon True
+    )
