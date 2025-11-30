@@ -5,7 +5,7 @@ def leerReinas(prompt:str )-> int:
         try:
             n=int(input(prompt))
             if n<=1:
-                print('El numero debe ser mayor a 1')
+                print('El numero debe ser mayor aa 1')
             elif n in (2,3):
                 print('no existe solucion para 2 o 3 reinas')
             else:
