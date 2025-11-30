@@ -26,7 +26,7 @@ Ventajas prácticas de EasyOCR:
 
 porque no un modelo propio  entrenado con placas del estado de sinaloa 
 
-Un modelo propio solo conviene si tienes muchos datos de tu dominio en este caso miles de
+Un modelo propio solo conviene si tenemos muchos datos de tu dominio en este caso miles de
 placas en circulacion en sinaloa Ahí puede superar a EasyOCR porque aprende justo ese patrón.
 Pero implica dedicar tiempo a etiquetar, entrenar, ajustar hiperparámetros y mantener
 el modelo. Para la mayoría de proyectos, EasyOCR es la opción rápida y precisa 
@@ -121,7 +121,7 @@ def read_plate(image: np.ndarray) -> str:
 
 def main():
     """Carga imagen y muestra la lectura."""
-    filename = "ejemplos/2.jpg"
+    filename = "ejemplos/9.jpg"
     image = cv2.imread(filename)
 
     if image is None:
