@@ -1,77 +1,64 @@
-# EstacionaTEC - Sistema de Reportes
+# Frontend — EstacionaTEC
 
-## Acerca del Proyecto
+Interfaz web para reportar vehículos, mostrar información general y administrar reportes.
 
-EstacionaTEC es un sistema de reportes para infracciones de estacionamiento en el Instituto Tecnológico de Culiacán. Permite a la comunidad estudiantil reportar casos de abuso de estacionamiento de manera fácil y transparente.
+## Descripción general
 
-## Project info
+El frontend de EstacionaTEC es una aplicación web desarrollada con **React + Vite**.
+Proporciona una interfaz sencilla para que cualquier persona pueda levantar reportes de vehículos mal estacionados y permite a los administradores revisar, aprobar o rechazar dichos reportes.
 
-**URL**: https://lovable.dev/projects/7d8d7445-fc99-4bc4-9086-222462875176
+El sistema se conecta directamente con Supabase para almacenamiento, autenticación, lectura de datos y ejecución de funciones RPC.
 
-## How can I edit this code?
+## Páginas principales
 
-There are several ways of editing your application.
+El frontend cuenta con tres pantallas principales:
 
-**Use Lovable**
+### Landing Page
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/7d8d7445-fc99-4bc4-9086-222462875176) and start prompting.
+Página inicial del sistema. Presenta una introducción al propósito de EstacionaTEC y la capacidad de levantar un reporte
+### ReportForm
 
-Changes made via Lovable will be committed automatically to this repo.
+Formulario donde se levantan reportes de vehículos.
+Permite:
 
-**Use your preferred IDE**
+* Capturar fotografías del vehículo.
+* Ingresar o confirmar la placa detectada automáticamente.
+* Seleccionar el tipo de infracción.
+* Enviar el reporte de forma anónima.
+* Validar datos antes de enviarlos a Supabase.
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+Esta página utiliza APIs del backend para el procesamiento de imágenes y reconocimiento de placas.
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### Admin
 
-Follow these steps:
+Sección exclusiva para administradores.
+Incluye:
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+* Lista de reportes pendientes, aprobados y rechazados.
+* Función para aprobar o rechazar reportes (lo cual ejecuta el trigger automático de Supabase).
+* Historial completo de actividad.
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+## Estructura del directorio
 
-# Step 3: Install the necessary dependencies.
-npm i
+### src/
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+Contiene el código principal organizado en:
 
-**Edit a file directly in GitHub**
+* **pages/**: LandingPage, ReportForm, Admin.
+* **components/**: elementos reutilizables de la interfaz.
+* **lib/supabaseClient.ts**: cliente configurado para Supabase.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### public/
 
-**Use GitHub Codespaces**
+Archivos estáticos visibles públicamente.
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Variables de entorno
 
-## What technologies are used for this project?
+El frontend utiliza las siguientes variables en `.env`:
 
-This project is built with:
+* `VITE_SUPABASE_URL`
+* `VITE_SUPABASE_ANON_KEY`
+* VITE_PLATE_API_URL=https://apiestacionatec.johandevsec.com
+## Objetivo del frontend
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/7d8d7445-fc99-4bc4-9086-222462875176) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+Brindar una interfaz clara y accesible para realizar reportes de estacionamiento y permitir a los administradores gestionar el sistema de forma eficiente.
